@@ -11,6 +11,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import com.cakeme.backend.dto.cake.CakeRequestDTO;
+
 @RestController
 @RequestMapping("/cake")
 public class CakeController {
@@ -22,21 +24,13 @@ public class CakeController {
     }
 
     @PostMapping("/design")
-    public Map<String, Object> generateCakeDesign(@RequestBody Map<String, Object> request) {
-        // 입력 데이터 추출
-        String shape = (String) request.get("shape");
-        String flavor = (String) request.get("flavor");
-        String color1 = (String) request.get("color1");
-        String color2 = (String) request.get("color2");
-        String occasion = (String) request.get("occasion");
-        String theme = (String) request.get("theme");
-        String text = (String) request.get("text");
-
+    public Map<String, Object> generateCakeDesign(@RequestBody CakeRequestDTO request) {
         // 메시지 구성
         String message = String.format(
                 "%s shaped cake with %s flavor, decorated with %s and %s as cream colors, made for a %s occasion, " +
                         "designed in a %s theme with '%s' written on it. No background.",
-                shape, flavor, color1, color2, occasion, theme, text
+                request.getShape(), request.getFlavor(), request.getColor1(), request.getColor2(),
+                request.getOccasion(), request.getTheme(), request.getText()
         );
 
         // OpenAI API로 이미지 생성
