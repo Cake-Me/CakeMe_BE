@@ -15,7 +15,7 @@ public class UserService {
 
     public Long save(AddUserRequestDTO request) {
         return userRepository.save(
-                com.cakeme.backend.domain.UserEntity.builder()
+                com.cakeme.backend.entity.UserEntity.builder()
                         .username(request.getUsername())
                         .userId(request.getUserId())
                         .password(bCryptPasswordEncoder.encode(request.getPassword()))

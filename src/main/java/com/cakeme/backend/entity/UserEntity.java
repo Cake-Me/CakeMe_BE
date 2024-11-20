@@ -1,4 +1,4 @@
-package com.cakeme.backend.domain;
+package com.cakeme.backend.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
