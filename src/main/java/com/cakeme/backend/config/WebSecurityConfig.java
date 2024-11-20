@@ -39,7 +39,7 @@ public class WebSecurityConfig {
                         "/swagger-resources/**", // Swagger 리소스
                         "/webjars/**"        // Swagger 관련 웹 자원
                 ).permitAll()
-                .requestMatchers("/login", "/signup/**").permitAll()
+                .requestMatchers("/login", "/signup/**", "/cake/**").permitAll()
                 .anyRequest().authenticated()
         );
 
