@@ -1,5 +1,6 @@
 package com.cakeme.backend.controller;
 
+import com.cakeme.backend.dto.post.FileUploadRequestDTO;
 import com.cakeme.backend.dto.post.PostRequestDTO;
 import com.cakeme.backend.dto.post.PostResponseDTO;
 import com.cakeme.backend.dto.response.ResponseDTO;
@@ -104,35 +105,16 @@ public class PostController {
     }
 
     @PostMapping("/post/upload")
-    @Operation(
-            summary = "파일 업로드",
-            description = "게시글에 첨부할 파일을 업로드합니다.",
-            requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
-                    content = @Content(
-                            mediaType = "multipart/form-data",
-                            schema = @Schema(
-                                    type = "object",
-                                    properties = {
-                                            @Schema(
-                                                    name = "file",       // 파라미터 이름
-                                                    type = "string",    // 타입
-                                                    format = "binary",  // 파일 형식 지정
-                                                    description = "업로드할 파일"
-                                            )
-                                    }
-                            )
-                    )
-            )
-    )
-    public ResponseEntity<ResponseDTO<String>> uploadFile(
-            @RequestParam("file") MultipartFile file) {
+    @Operation(summary = "파일 업로드", description = "게시글에 첨부할 파일을 업로드합니다.")
+    public ResponseEntity<ResponseDTO<String>> uploadFile(@ModelAttribute FileUploadRequestDTO request) {
         try {
-            String filePath = fileStorageService.storeFile(file);
+            String filePath = fileStorageService.storeFile(request.getFile());
             return ResponseEntity.ok(new ResponseDTO<>(200, "파일 업로드 성공", filePath));
         } catch (Exception e) {
             return ResponseEntity.status(500).body(new ResponseDTO<>(500, "파일 업로드 실패", null));
         }
     }
+
 
 
     private PostResponseDTO mapToResponseDTO(PostEntity post) {
