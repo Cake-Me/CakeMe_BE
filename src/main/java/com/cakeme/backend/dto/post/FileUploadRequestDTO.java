@@ -11,3 +11,4 @@ public class FileUploadRequestDTO {
     @Schema(type = "string", format = "binary", description = "업로드할 파일")
     private MultipartFile file;
 }
+

@@ -1,6 +1,5 @@
 package com.cakeme.backend.controller;
 
-import com.cakeme.backend.dto.post.FileUploadRequestDTO;
 import com.cakeme.backend.dto.post.PostRequestDTO;
 import com.cakeme.backend.dto.post.PostResponseDTO;
 import com.cakeme.backend.dto.response.ResponseDTO;
@@ -35,17 +34,38 @@ public class PostController {
         this.fileStorageService = fileStorageService;
     }
 
-    @PostMapping("/post")
-    @Operation(summary = "게시글 생성", description = "새로운 게시글을 생성합니다.")
-    public ResponseEntity<ResponseDTO<PostResponseDTO>> createPost(@RequestBody PostRequestDTO postRequestDTO) {
+    @PostMapping(value = "/post", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @Operation(
+            summary = "게시글 생성",
+            description = "새로운 게시글을 생성하며 첨부 파일을 포함할 수 있습니다.",
+            requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
+                    required = true,
+                    content = @Content(
+                            mediaType = MediaType.MULTIPART_FORM_DATA_VALUE,
+                            schema = @Schema(implementation = PostRequestDTO.class)
+                    )
+            )
+    )
+    public ResponseEntity<ResponseDTO<PostResponseDTO>> createPost(@ModelAttribute PostRequestDTO postRequestDTO) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         UserEntity authenticatedUser = (UserEntity) authentication.getPrincipal();
 
+        // 첨부 파일 처리
+        String attachmentPath = null;
+        if (postRequestDTO.getAttachment() != null && !postRequestDTO.getAttachment().isEmpty()) {
+            try {
+                attachmentPath = fileStorageService.storeFile(postRequestDTO.getAttachment());
+            } catch (Exception e) {
+                return ResponseEntity.status(500).body(new ResponseDTO<>(500, "첨부 파일 저장 실패: " + e.getMessage(), null));
+            }
+        }
+
+        // PostEntity 생성
         PostEntity postEntity = new PostEntity();
         postEntity.setTitle(postRequestDTO.getTitle());
         postEntity.setContent(postRequestDTO.getContent());
         postEntity.setCategory(postRequestDTO.getCategory());
-        postEntity.setAttachment(postRequestDTO.getAttachment());
+        postEntity.setAttachment(attachmentPath);
         postEntity.setAuthor(authenticatedUser);
 
         PostEntity createdPost = postService.createPost(postEntity);
@@ -54,21 +74,31 @@ public class PostController {
         return ResponseEntity.ok(new ResponseDTO<>(200, "게시글 생성 성공", responseDTO));
     }
 
-    @PutMapping("/post/{id}")
-    @Operation(summary = "게시글 수정", description = "기존 게시글을 수정합니다.")
+    @PutMapping(value = "/post/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @Operation(summary = "게시글 수정", description = "기존 게시글을 수정하며 첨부파일도 업데이트할 수 있습니다.")
     public ResponseEntity<ResponseDTO<PostResponseDTO>> updatePost(
             @PathVariable Long id,
-            @RequestBody PostRequestDTO postRequestDTO) {
+            @ModelAttribute PostRequestDTO postRequestDTO) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         UserEntity authenticatedUser = (UserEntity) authentication.getPrincipal();
 
-        PostEntity postEntity = new PostEntity();
-        postEntity.setId(id);
+        PostEntity postEntity = postService.getPostById(id)
+                .orElseThrow(() -> new IllegalArgumentException("게시글을 찾을 수 없습니다."));
+
         postEntity.setTitle(postRequestDTO.getTitle());
         postEntity.setContent(postRequestDTO.getContent());
         postEntity.setCategory(postRequestDTO.getCategory());
-        postEntity.setAttachment(postRequestDTO.getAttachment());
         postEntity.setAuthor(authenticatedUser);
+
+        // 첨부파일 처리 (선택적으로 업데이트)
+        if (postRequestDTO.getAttachment() != null && !postRequestDTO.getAttachment().isEmpty()) {
+            try {
+                String filePath = fileStorageService.storeFile(postRequestDTO.getAttachment());
+                postEntity.setAttachment(filePath);
+            } catch (Exception e) {
+                return ResponseEntity.status(500).body(new ResponseDTO<>(500, "첨부 파일 저장 실패: " + e.getMessage(), null));
+            }
+        }
 
         PostEntity updatedPost = postService.updatePost(postEntity);
         PostResponseDTO responseDTO = mapToResponseDTO(updatedPost);
@@ -103,19 +133,6 @@ public class PostController {
         postService.deletePost(id);
         return ResponseEntity.ok(new ResponseDTO<>(200, "게시글 삭제 성공", null));
     }
-
-    @PostMapping("/post/upload")
-    @Operation(summary = "파일 업로드", description = "게시글에 첨부할 파일을 업로드합니다.")
-    public ResponseEntity<ResponseDTO<String>> uploadFile(@ModelAttribute FileUploadRequestDTO request) {
-        try {
-            String filePath = fileStorageService.storeFile(request.getFile());
-            return ResponseEntity.ok(new ResponseDTO<>(200, "파일 업로드 성공", filePath));
-        } catch (Exception e) {
-            return ResponseEntity.status(500).body(new ResponseDTO<>(500, "파일 업로드 실패", null));
-        }
-    }
-
-
 
     private PostResponseDTO mapToResponseDTO(PostEntity post) {
         PostResponseDTO responseDTO = new PostResponseDTO();
