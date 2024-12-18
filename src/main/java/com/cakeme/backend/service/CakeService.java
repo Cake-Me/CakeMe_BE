@@ -1,4 +1,3 @@
-// CakeService.java
 package com.cakeme.backend.service;
 
 import com.cakeme.backend.dto.cake.CakeRequestDTO;
@@ -15,6 +14,9 @@ public class CakeService {
     }
 
     public CakeEntity saveCakeDesign(CakeRequestDTO request, String imageUrl) {
+        // ".jpg" 확장자 추가
+        String formattedImageUrl = imageUrl + ".jpg";
+
         CakeEntity cakeEntity = CakeEntity.builder()
                 .shape(request.getShape())
                 .flavor(request.getFlavor())
@@ -23,7 +25,7 @@ public class CakeService {
                 .occasion(request.getOccasion())
                 .theme(request.getTheme())
                 .text(request.getText())
-                .imageUrl(imageUrl)
+                .imageUrl(formattedImageUrl) // 수정된 이미지 URL 저장
                 .build();
 
         return cakeRepository.save(cakeEntity);
