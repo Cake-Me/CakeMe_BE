@@ -47,6 +47,7 @@ dependencies {
 	implementation 'javax.xml.bind:jaxb-api:2.3.0'
 	implementation 'sh.platform:config:2.2.2'
 
+	implementation 'commons-io:commons-io:2.11.0'
 }
 
 tasks.named('test') {

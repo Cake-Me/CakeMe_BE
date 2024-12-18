@@ -6,9 +6,11 @@ import com.cakeme.backend.dto.cake.CakeRequestDTO;
 import com.cakeme.backend.dto.response.ResponseDTO;
 import com.cakeme.backend.service.CakeService;
 import com.cakeme.backend.service.OpenAiService;
+import com.cakeme.backend.util.ImageDownloader;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -47,30 +49,25 @@ public class CakeController {
     }
 
     @PostMapping("/save")
-    public ResponseEntity<ResponseDTO<CakeEntity>> saveCakeDesign(@RequestBody Map<String, Object> saveRequest) {
-        // 요청 데이터 추출
-        int selectedIndex = (int) saveRequest.get("selectedIndex"); // 선택된 이미지의 인덱스
-        List<String> images = (List<String>) saveRequest.get("images"); // 이미지 리스트
+    public ResponseEntity<ResponseDTO<String>> saveCakeDesign(@RequestBody Map<String, Object> saveRequest) {
+        int selectedIndex = (int) saveRequest.get("selectedIndex");
+        List<String> images = (List<String>) saveRequest.get("images");
 
         if (selectedIndex < 0 || selectedIndex >= images.size()) {
             throw new IllegalArgumentException("Invalid image selection index.");
         }
 
         String imageUrl = images.get(selectedIndex); // 선택된 이미지 URL
+        String saveDir = "images"; // 저장할 디렉토리
+        String fileName = "cake_image_" + selectedIndex; // 저장할 파일 이름
 
-        CakeRequestDTO request = new CakeRequestDTO(
-                (String) saveRequest.get("shape"),
-                (String) saveRequest.get("flavor"),
-                (String) saveRequest.get("color1"),
-                (String) saveRequest.get("color2"),
-                (String) saveRequest.get("occasion"),
-                (String) saveRequest.get("theme"),
-                (String) saveRequest.get("text")
-        );
-
-        // 케이크 엔티티 저장
-        CakeEntity savedCake = cakeService.saveCakeDesign(request, imageUrl);
-
-        return ResponseEntity.ok(new ResponseDTO<>(200, "Cake design saved successfully", savedCake));
+        try {
+            // 이미지 다운로드 및 저장
+            String savedImagePath = ImageDownloader.downloadImage(imageUrl, saveDir, fileName);
+            return ResponseEntity.ok(new ResponseDTO<>(200, "Image saved successfully", savedImagePath));
+        } catch (IOException e) {
+            return ResponseEntity.status(500).body(new ResponseDTO<>(500, "Image download failed", null));
+        }
     }
+
 }
