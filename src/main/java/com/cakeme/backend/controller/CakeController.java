@@ -61,6 +61,7 @@ public class CakeController {
         String saveDir = "images"; // 저장할 디렉토리
         String fileName = "cake_image_" + selectedIndex; // 저장할 파일 이름
 
+
         try {
             // 이미지 다운로드 및 저장
             String savedImagePath = ImageDownloader.downloadImage(imageUrl, saveDir, fileName);
