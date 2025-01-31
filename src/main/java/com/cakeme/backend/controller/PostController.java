@@ -52,9 +52,10 @@ public class PostController {
 
         // 첨부 파일 처리
         String attachmentPath = null;
-        if (postRequestDTO.getAttachment() != null && !postRequestDTO.getAttachment().isEmpty()) {
+        MultipartFile attachment = postRequestDTO.getAttachment();
+        if (attachment != null && !attachment.isEmpty()) {
             try {
-                attachmentPath = fileStorageService.storeFile(postRequestDTO.getAttachment());
+                attachmentPath = fileStorageService.storeFile(attachment);
             } catch (Exception e) {
                 return ResponseEntity.status(500).body(new ResponseDTO<>(500, "첨부 파일 저장 실패: " + e.getMessage(), null));
             }
@@ -65,7 +66,7 @@ public class PostController {
         postEntity.setTitle(postRequestDTO.getTitle());
         postEntity.setContent(postRequestDTO.getContent());
         postEntity.setCategory(postRequestDTO.getCategory());
-        postEntity.setAttachment(attachmentPath);
+        postEntity.setAttachment(attachmentPath); // null 또는 저장된 파일 경로
         postEntity.setAuthor(authenticatedUser);
 
         PostEntity createdPost = postService.createPost(postEntity);
@@ -74,8 +75,19 @@ public class PostController {
         return ResponseEntity.ok(new ResponseDTO<>(200, "게시글 생성 성공", responseDTO));
     }
 
+
     @PutMapping(value = "/post/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    @Operation(summary = "게시글 수정", description = "기존 게시글을 수정하며 첨부파일도 업데이트할 수 있습니다.")
+    @Operation(
+            summary = "게시글 수정",
+            description = "기존 게시글을 수정하며 첨부파일도 업데이트할 수 있습니다.",
+            requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
+                    required = true,
+                    content = @Content(
+                            mediaType = MediaType.MULTIPART_FORM_DATA_VALUE,
+                            schema = @Schema(implementation = PostRequestDTO.class)
+                    )
+            )
+    )
     public ResponseEntity<ResponseDTO<PostResponseDTO>> updatePost(
             @PathVariable Long id,
             @ModelAttribute PostRequestDTO postRequestDTO) {
