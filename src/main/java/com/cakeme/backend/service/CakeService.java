@@ -1,10 +1,9 @@
 package com.cakeme.backend.service;
 
+import com.cakeme.backend.dto.cake.CakeRequestDTO;
 import com.cakeme.backend.entity.CakeEntity;
 import com.cakeme.backend.repository.CakeRepository;
 import org.springframework.stereotype.Service;
-
-import java.util.List;
 
 @Service
 public class CakeService {
@@ -14,7 +13,21 @@ public class CakeService {
         this.cakeRepository = cakeRepository;
     }
 
-    public List<CakeEntity> getCakes(String shape, String flavor, String color1, String color2, String occasion, String theme, String text) {
-        return cakeRepository.findByShapeAndFlavorAndColor1AndColor2AndOccasionAndThemeAndText(shape, flavor, color1, color2,  occasion, theme, text);
+    public CakeEntity saveCakeDesign(CakeRequestDTO request, String imageUrl) {
+        // ".jpg" 확장자 추가
+        String formattedImageUrl = imageUrl + ".jpg";
+
+        CakeEntity cakeEntity = CakeEntity.builder()
+                .shape(request.getShape())
+                .flavor(request.getFlavor())
+                .color1(request.getColor1())
+                .color2(request.getColor2())
+                .occasion(request.getOccasion())
+                .theme(request.getTheme())
+                .text(request.getText())
+                .imageUrl(formattedImageUrl) // 수정된 이미지 URL 저장
+                .build();
+
+        return cakeRepository.save(cakeEntity);
     }
 }
