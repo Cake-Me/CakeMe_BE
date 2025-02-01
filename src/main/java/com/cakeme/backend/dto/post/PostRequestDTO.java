@@ -18,7 +18,6 @@ public class PostRequestDTO {
     @Schema(description = "게시글 카테고리", example = "카테고리 이름")
     private String category;
 
-    @Schema(type = "string", format = "binary", description = "첨부파일 (선택 사항)")
-    private MultipartFile attachment; // 파일 첨부
+    @Schema(type = "string", format = "binary", description = "첨부파일 (선택 사항)", required = false)
+    private MultipartFile attachment; // 파일 첨부 (필수 아님)
 }
-

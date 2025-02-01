@@ -2,7 +2,6 @@ package com.cakeme.backend.dto.post;
 
 import lombok.Getter;
 import lombok.Setter;
-import org.springframework.web.multipart.MultipartFile;
 
 @Getter
 @Setter
@@ -11,7 +10,7 @@ public class PostResponseDTO {
     private String title; // 제목
     private String content; // 내용
     private String category; // 카테고리
-    private String attachment;
+    private String attachment; // 첨부파일 경로 (첨부파일이 없으면 null)
     private String author; // 작성자 이름
-    private String authorId; // 작성자 ID (추가)
+    private String authorId; // 작성자 ID
 }
