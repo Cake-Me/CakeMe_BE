@@ -48,7 +48,7 @@ public class PostController {
 
         // 첨부파일 확인 및 처리
         String attachmentPath = null;
-        if (postRequestDTO.getAttachment() != null && !postRequestDTO.getAttachment().getOriginalFilename().isEmpty()) {
+        if (postRequestDTO.getAttachment() != null && !postRequestDTO.getAttachment().isEmpty()) {
             attachmentPath = postRequestDTO.getAttachment().getOriginalFilename();
         }
 
@@ -65,8 +65,6 @@ public class PostController {
 
         return ResponseEntity.ok(new ResponseDTO<>(200, "게시글 생성 성공", responseDTO));
     }
-
-
 
     @PutMapping(value = "/post/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @Operation(summary = "게시글 수정", description = "기존 게시글을 수정합니다.")
@@ -95,6 +93,31 @@ public class PostController {
         return ResponseEntity.ok(new ResponseDTO<>(200, "게시글 수정 성공", responseDTO));
     }
 
+    @GetMapping("/post/{id}")
+    @Operation(summary = "게시글 조회", description = "ID로 특정 게시글을 조회합니다.")
+    public ResponseEntity<ResponseDTO<PostResponseDTO>> getPostById(@PathVariable Long id) {
+        PostEntity postEntity = postService.getPostById(id)
+                .orElseThrow(() -> new IllegalArgumentException("게시글을 찾을 수 없습니다."));
+        PostResponseDTO responseDTO = mapToResponseDTO(postEntity);
+        return ResponseEntity.ok(new ResponseDTO<>(200, "게시글 조회 성공", responseDTO));
+    }
+
+    @GetMapping("/posts")
+    @Operation(summary = "게시글 목록 조회", description = "모든 게시글의 목록을 조회합니다.")
+    public ResponseEntity<ResponseDTO<List<PostResponseDTO>>> getAllPosts() {
+        List<PostResponseDTO> postList = postService.getAllPosts().stream()
+                .map(this::mapToResponseDTO)
+                .collect(Collectors.toList());
+        return ResponseEntity.ok(new ResponseDTO<>(200, "게시글 목록 조회 성공", postList));
+    }
+
+    @DeleteMapping("/post/{id}")
+    @Operation(summary = "게시글 삭제", description = "ID로 특정 게시글을 삭제합니다.")
+    public ResponseEntity<ResponseDTO<Void>> deletePost(@PathVariable Long id) {
+        postService.deletePost(id);
+        return ResponseEntity.ok(new ResponseDTO<>(200, "게시글 삭제 성공", null));
+    }
+
     private PostResponseDTO mapToResponseDTO(PostEntity post) {
         PostResponseDTO responseDTO = new PostResponseDTO();
         responseDTO.setId(post.getId());
@@ -114,3 +137,4 @@ public class PostController {
         return responseDTO;
     }
 }
+
