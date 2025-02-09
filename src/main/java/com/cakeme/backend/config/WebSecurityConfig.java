@@ -39,7 +39,7 @@ public class WebSecurityConfig {
                         "/swagger-resources/**", // Swagger 리소스
                         "/webjars/**"        // Swagger 관련 웹 자원
                 ).permitAll()
-                .requestMatchers("/login", "/signup/**", "/cake/**,").permitAll()
+                .requestMatchers("/login", "/signup/**", "/cake/**").permitAll()
                 .requestMatchers("/scrap/**").authenticated() //인증된 사용자만 사용 가능
                 .anyRequest().authenticated()
         );
@@ -54,7 +54,7 @@ public class WebSecurityConfig {
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
         /*configuration.setAllowedOriginPatterns(List.of("*"));*/ // 모든 도메인 허용
-        configuration.setAllowedOrigins(List.of("http://localhost:8080"));
+        configuration.setAllowedOrigins(List.of("http://localhost:8080", "http://localhost:5173"));
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(List.of("*"));
         configuration.setAllowCredentials(true);
